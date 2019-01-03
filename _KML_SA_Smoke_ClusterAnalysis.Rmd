@@ -5,13 +5,13 @@ date: "4/25/2018"
 output: html_document
 ---
 
-```{r, echo = FALSE, warning = FALSE, message = FALSE}
+```{r, include=FALSE}
 library(kml)
 library(ggplot2)
 library(reshape2)
 library(kableExtra)
 
-## read in dataset 'merge'
+# Read in datasets
 alcohol=read.csv('/Users/user/Dropbox/Melissa/PASS/data/adalc_patid.csv')
 smoke=read.csv('/Users/user/Dropbox/Melissa/PASS/data/adsmk_patid.csv')
 load('/Users/user/Dropbox/Melissa/PASS/kml_cluster_v1_20180426/PASS_allparticipants_v1_20180421.Rdata')
