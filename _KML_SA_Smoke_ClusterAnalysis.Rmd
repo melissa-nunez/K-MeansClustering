@@ -1,6 +1,6 @@
 ---
 title: "K-means Clustering by Total Cigarettes Per Trimester for Participants With Three Completed Trimesters in the South Africa Site"
-author: "Melissa Nunez"
+author: "Melissa Nuñez"
 date: "4/25/2018"
 output: html_document
 ---
