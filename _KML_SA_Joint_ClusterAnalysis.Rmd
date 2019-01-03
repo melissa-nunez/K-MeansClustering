@@ -1,0 +1,96 @@
+---
+title: "K-means Clustering by Total Drinks and Total Cigaretters Per Trimester for Participants With Three Completed Trimesters in the South Africa Site"
+author: "Melissa Nunez"
+date: "4/25/2018"
+output: html_document
+---
+
+
+```{r, include=FALSE}
+library(kml3d)
+library(ggplot2)
+library(kableExtra)
+library(reshape2)
+library(gridExtra)
+
+## Read in dataset 'merge'
+alcohol=read.csv('/Users/user/Dropbox/Melissa/PASS/data/adalc_patid.csv')
+smoke=read.csv('/Users/user/Dropbox/Melissa/PASS/data/adsmk_patid.csv')
+load('/Users/user/Dropbox/Melissa/PASS/kml_cluster_v1_20180426/PASS_allparticipants_v1_20180421.Rdata')
+
+
+runkml3d<-function(data, variable.loc, time=c(1,2,3),newvar='cluster'){
+  set.seed(123456)
+  cld <- cld3d(data,timeInData=variable.loc,time=time)
+  kml3d(cld,nbClusters=4:7,nbRedrawing=20)
+#  try(choice(cld))
+  a=plotAllCriterion(cld,CRITERION_NAMES[4])
+  return(cld)
+}
+
+```
+
+#### For exposure definition, d0s0 - did not smoke or drink, d0s1 - did not drink, but did smoke, etc
+```{r, echo=FALSE, warning = FALSE, message = FALSE}
+## Subset data
+pass.SA.completers = merge[merge$site=='BISH' & merge$TotCigs_Num_Avai_tri==3 & merge$TotalStdDrinks_Num_Avai_tri==3,]
+
+# Merge the drinking and smoking variables
+drinkvars=names(merge)[grep('TotalStdDrinksT',names(merge))]
+cigvars=names(merge)[grep('TotCigsT',names(merge))]
+
+# Run Kml3d for joint clusters
+cld.joint <- cld3d(pass.SA.completers[pass.SA.completers$total_exposure_both!='d0s0',], timeInData = list(grep('TotCigsT',names(merge)),grep('TotalStdDrinksT',names(merge))), time = c(1,2,3))
+kml3d(cld.joint,nbClusters = 4:9)
+
+# Create new column called 'Cluster.TotalStdDrinks' with all NA entries
+pass.SA.completers$Cluster.TotalJoint<-NA
+
+# Enter 'N' in the 'Cluster.TotalStdDrinks' column for all nonexposed patients
+pass.SA.completers$Cluster.TotalJoint[pass.SA.completers$total_exposure_both=='d0s0']='N'
+
+# Input cluster number for each patient into the 'Cluster.TotalStdDrinks' column
+pass.SA.completers$Cluster.TotalJoint[pass.SA.completers$total_exposure_both!='d0s0']=getClusters(cld.joint,4)
+
+# Sample size tables
+library(matrixStats)
+library(kableExtra)
+
+StdJoint.count <- table(pass.SA.completers$Cluster.TotalJoint)
+StdJoint.Prop <- round(prop.table(StdJoint.count)*100, digits = 1)
+StdJoint.Cum <- round((cumsum(StdJoint.count)/(dim(pass.SA.completers)[1]))*100, digits = 1)
+StdJoint.Table <- data.frame(cbind(StdJoint.count,StdJoint.Prop, StdJoint.Cum))
+binded <- rbind(StdJoint.Table,"Sum" = colSums(StdJoint.Table[1:2]))
+binded[6,3] <- ""
+
+Joint.count.kable <- kable(binded, col.names = c("N","Raw %","Cumulative %"), "html", caption = "Subject Count Per Cluster")
+kable_styling(Joint.count.kable, bootstrap_options = c("striped", "hover"), full_width = F, position = "left")
+
+CrossTab.Joint <- addmargins(xtabs(~Cluster.TotalJoint+total_exposure_both, data = pass.SA.completers))
+
+Joint.prop.kable <- kable(CrossTab.Joint, "html", caption = "Subject Count Grouped by Cluster and Exposure")
+kable_styling(Joint.prop.kable, bootstrap_options = c("striped", "hover"), full_width = F, position = "left")
+
+
+# ggplots of cluster for both cig and drinks
+Joint.Cig.Plot <- ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalJoint", cigvars)], id=c('patid','Cluster.TotalJoint')), aes(x=variable,y=value, group=patid, colour=Cluster.TotalJoint))+ggtitle("Total Cigarettes for Joint Cluster")+geom_line(size=0.01,linetype = 1)+stat_summary(aes(y = value,group = Cluster.TotalJoint), fun.y=mean, geom="line",size=2) + scale_x_discrete(labels=c("T1","T2","T3")) + facet_grid(. ~ Cluster.TotalJoint)
+
+
+Joint.Drinks.Plot <- ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalJoint", drinkvars)], id=c('patid','Cluster.TotalJoint')), aes(x=variable,y=value, group=patid, colour=Cluster.TotalJoint))+ggtitle("Total Standard Drinks for Joint Cluster")+geom_line(size=0.01,linetype = 1)+stat_summary(aes(y = value,group = Cluster.TotalJoint), fun.y=mean, geom="line",size=2) + scale_x_discrete(labels=c("T1","T2","T3")) + facet_grid(. ~ Cluster.TotalJoint)
+
+#print(grid.arrange(Joint.Cig.Plot,Joint.Drinks.Plot, nrow=2))
+
+ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalJoint", cigvars)], id=c('patid','Cluster.TotalJoint')), aes(x=variable,y=value, group=patid, colour=Cluster.TotalJoint))+ggtitle("Total Cigarettes for Joint Cluster")+stat_summary(aes(y = value,group = Cluster.TotalJoint), fun.y=mean, geom="line",size=2) + scale_x_discrete(labels=c("T1","T2","T3")) + facet_grid(. ~ Cluster.TotalJoint)
+
+
+ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalJoint", drinkvars)], id=c('patid','Cluster.TotalJoint')), aes(x=variable,y=value, group=patid, colour=Cluster.TotalJoint))+ggtitle("Total Standard Drinks for Joint Cluster")+stat_summary(aes(y = value,group = Cluster.TotalJoint), fun.y=mean, geom="line",size=2) + scale_x_discrete(labels=c("T1","T2","T3")) + facet_grid(. ~ Cluster.TotalJoint)
+
+#print(grid.arrange(Joint.Cig.Plot,Joint.Drinks.Plot, nrow=2))
+
+```
+
+```{r, include = FALSE}
+#save.image('_KML_SA_Joint_ClusterAnalysis.RData')
+```
+
+
