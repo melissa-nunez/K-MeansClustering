@@ -1,4 +1,4 @@
-# K-MeansClustering
+# K-Means Clustering For Longitudinal Data
 
 The Safe Passage Study, also known as PASS study, was a multicenter, prospective pregnancy cohort study that collected data from women living in the Northern Plains, US and Cape Town, South Africa. The goal of the study was to investigate the role of prenatal drinking and smoking on postnatal outcomes. 
 
