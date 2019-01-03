@@ -67,12 +67,22 @@ Drinks.prop.kable <- kable(CrossTab.Drinks, "html", caption = "Subject Count Gro
 kable_styling(Drinks.prop.kable, bootstrap_options = c("striped", "hover"), full_width = F, position = "left")
 
 # Plotting the cluster trajectories
-ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalStdDrinks", drinkvars)], id=c('patid','Cluster.TotalStdDrinks')), aes(x=variable,y=value, group=patid, colour=Cluster.TotalStdDrinks))+stat_summary(aes(y = value,group = Cluster.TotalStdDrinks), fun.y=mean, geom="line",size=2)+theme(legend.position=c(0.8,0.8))+ggtitle("Total Drinks Per Trimester Grouped by Cluster")
+ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalStdDrinks", drinkvars)], id=c('patid','Cluster.TotalStdDrinks')), aes(x=variable,y=value, group=patid, colour=Cluster.TotalStdDrinks)) + 
+stat_summary(aes(y = value,group = Cluster.TotalStdDrinks), fun.y=mean, geom="line",size=2) +
+theme(legend.position=c(0.8,0.8)) + ggtitle("Total Drinks Per Trimester Grouped by Cluster")
 
 
-ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalStdDrinks", drinkvars)], id=c('patid','Cluster.TotalStdDrinks')), aes(x=variable,y=value, group=patid, colour=Cluster.TotalStdDrinks))+geom_line(size=0.01,linetype = 1)+stat_summary(aes(y = value,group = Cluster.TotalStdDrinks), fun.y=mean, geom="line",size=2)+ggtitle("Total Drinks Per Trimester Grouped by Cluster")
+ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalStdDrinks", drinkvars)], id=c('patid','Cluster.TotalStdDrinks')), aes(x=variable,y=value, group=patid, colour=Cluster.TotalStdDrinks)) + 
+geom_line(size=0.01,linetype = 1) + 
+stat_summary(aes(y = value,group = Cluster.TotalStdDrinks), fun.y=mean, geom="line",size=2) + 
+ggtitle("Total Drinks Per Trimester Grouped by Cluster")
 
 
-ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalStdDrinks", drinkvars)], id=c('patid','Cluster.TotalStdDrinks')), aes(x=variable,y=value, group=patid, colour=Cluster.TotalStdDrinks))+geom_line(size=0.01,linetype = 1)+stat_summary(aes(y = value,group = Cluster.TotalStdDrinks), fun.y=mean, geom="line",size=2) + scale_x_discrete(labels=c("T1","T2","T3")) + facet_grid(. ~ Cluster.TotalStdDrinks)+ggtitle("Total Drinks Per Trimester Grouped by Cluster")
+ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalStdDrinks", drinkvars)], id=c('patid','Cluster.TotalStdDrinks')), aes(x=variable,y=value, group=patid, colour=Cluster.TotalStdDrinks)) + 
+geom_line(size=0.01,linetype = 1) + 
+stat_summary(aes(y = value,group = Cluster.TotalStdDrinks), fun.y=mean, geom="line",size=2) + 
+scale_x_discrete(labels=c("T1","T2","T3")) + 
+facet_grid(. ~ Cluster.TotalStdDrinks) + 
+ggtitle("Total Drinks Per Trimester Grouped by Cluster")
 
 ```
