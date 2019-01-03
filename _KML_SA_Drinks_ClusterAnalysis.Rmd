@@ -29,7 +29,8 @@ runkml<-function(data, variable.loc, time=c(1,2,3),newvar='cluster'){
 }
 ```
 
-### Total Std Drinks Only, Completers (with all three trimester visits)
+### Citerion for cluster sizes (k) is plotted, however we decided prior to analysis that k should be 4
+#### For exposure definition, d0s0 - did not smoke or drink, d0s1 - did not drink, but did smoke, etc
 ```{r,echo=FALSE}
 # Subset data where BISH is ID for Cape Town, South Africa
 pass.SA.completers = merge[merge$site=='BISH' & merge$TotalStdDrinks_Num_Avai_tri==3,]
