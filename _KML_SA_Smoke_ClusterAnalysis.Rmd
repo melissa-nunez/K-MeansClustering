@@ -1,0 +1,81 @@
+---
+title: "K-means Clustering by Total Cigarettes Per Trimester for Participants With Three Completed Trimesters in the South Africa Site"
+author: "Melissa Nunez"
+date: "4/25/2018"
+output: html_document
+---
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+library(kml)
+library(ggplot2)
+library(reshape2)
+library(kableExtra)
+
+## read in dataset 'merge'
+alcohol=read.csv('/Users/user/Dropbox/Melissa/PASS/data/adalc_patid.csv')
+smoke=read.csv('/Users/user/Dropbox/Melissa/PASS/data/adsmk_patid.csv')
+load('/Users/user/Dropbox/Melissa/PASS/kml_cluster_v1_20180426/PASS_allparticipants_v1_20180421.Rdata')
+
+
+runkml<-function(data, variable.loc, time=c(1,2,3),newvar='cluster'){
+  set.seed(123456)
+  cld <- cld(data,timeInData=variable.loc,time=time)
+  kml(cld,nbClusters=4:7,nbRedrawing=20)
+#  try(choice(cld))
+  a=plotAllCriterion(cld,CRITERION_NAMES[4])
+  return(cld)
+}
+```
+
+#### Citerion for cluster sizes (k) is plotted, however we decided prior to analysis that k should be 4
+#### For exposure definition, d0s0 - did not smoke or drink, d0s1 - did not drink, but did smoke, etc
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+## Create dataset for specific site and all three trimesters completed
+pass.SA.completers = merge[merge$site=='BISH' & merge$TotCigs_Num_Avai_tri==3,]
+
+# Merge the 'TotalStdDrinksT1, TotalStdDrinksT2, TotalStdDrinksT3'
+cigvars=names(merge)[grep('TotCigsT',names(merge))]
+
+# Run KML for exposed patients only - hence the != d0s0
+cld.SA.TotalCigs=runkml(pass.SA.completers[pass.SA.completers$total_exposure_both!='d0s0',], grep('TotCigsT',names(merge)))
+
+# Create new column called 'Cluster.TotalStdDrinks'
+pass.SA.completers$Cluster.TotalCigs<-NA
+
+# Enter 'N' in the 'Cluster.TotalStdDrinks' column for all nonexposed patients
+pass.SA.completers$Cluster.TotalCigs[pass.SA.completers$total_exposure_both=='d0s0']='N'
+
+# Input cluster number for each patient into the 'Cluster.TotalStdDrinks' column
+pass.SA.completers$Cluster.TotalCigs[pass.SA.completers$total_exposure_both!='d0s0']=getClusters(cld.SA.TotalCigs,4)
+
+# Sample size tables
+StdCigs.count <- table(pass.SA.completers$Cluster.TotalCigs)
+StdCigs.Prop <- round(prop.table(StdCigs.count)*100, digits = 1)
+StdCigs.Cum <- round((cumsum(StdCigs.count)/(dim(pass.SA.completers)[1]))*100, digits = 1)
+StdCigs.Table <- data.frame(cbind(StdCigs.count,StdCigs.Prop, StdCigs.Cum))
+binded <- rbind(StdCigs.Table,"Sum" = colSums(StdCigs.Table[1:2]))
+binded[6,3] <- ""
+
+Cig.count.kable <- kable(binded, col.names = c("N","Raw %","Cumulative %"), "html", caption = "Subject Count Per Cluster")
+kable_styling(Cig.count.kable, bootstrap_options = c("striped", "hover"), full_width = F, position = "left")
+
+CrossTab.Cigs <- addmargins(xtabs(~Cluster.TotalCigs+total_exposure_both, data = pass.SA.completers))
+
+Cig.prop.kable <- kable(CrossTab.Cigs, "html", caption = "Subject Count Grouped by Cluster and Exposure")
+kable_styling(Cig.prop.kable, bootstrap_options = c("striped", "hover"), full_width = F, position = "left")
+
+
+# Plot the trajectories
+ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalCigs", cigvars)], id=c('patid','Cluster.TotalCigs')), aes(x=variable,y=value, group=patid, colour=Cluster.TotalCigs))+stat_summary(aes(y = value,group = Cluster.TotalCigs), fun.y=mean, geom="line",size=2)+theme(legend.position=c(0.8,0.8))+ggtitle("Total Cigarettes Smoked Per Trimester Grouped by Cluster")
+
+
+ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalCigs", cigvars)], id=c('patid','Cluster.TotalCigs')), aes(x=variable,y=value, group=patid, colour=Cluster.TotalCigs))+ggtitle("Total Cigarettes Smoked Per Trimester Grouped by Cluster")+geom_line(size=0.01,linetype = 1)+stat_summary(aes(y = value,group = Cluster.TotalCigs), fun.y=mean, geom="line",size=2)
+
+ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalCigs", cigvars)], id=c('patid','Cluster.TotalCigs')), aes(x=variable,y=value, group=patid, colour=Cluster.TotalCigs))+ggtitle("Total Cigarettes Smoked Per Trimester Grouped by Cluster")+geom_line(size=0.01,linetype = 1)+stat_summary(aes(y = value,group = Cluster.TotalCigs), fun.y=mean, geom="line",size=2) + scale_x_discrete(labels=c("T1","T2","T3")) + facet_grid(. ~ Cluster.TotalCigs)
+
+
+
+
+```
+
+
