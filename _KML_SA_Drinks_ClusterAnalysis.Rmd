@@ -2,15 +2,14 @@
 title: "K-means Clustering by Total Drinks Per Trimester for Participants With Three Completed Trimesters in the South Africa Site"
 author: "Melissa Nuñez"
 date: "4/23/2018"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
 library(kml)
 library(ggplot2)
-library(gridExtra)
 library(reshape2)
-library(psych)
+library(knitr)
 library(kableExtra)
 
 # Read in datasets
@@ -29,42 +28,53 @@ runkml<-function(data, variable.loc, time=c(1,2,3),newvar='cluster'){
 }
 ```
 
-### Citerion for cluster sizes (k) is plotted, however we decided prior to analysis that k should be 4
-#### For exposure definition, d0s0 - did not smoke or drink, d0s1 - did not drink, but did smoke, etc
-```{r,echo=FALSE}
+### The citerion for cluster sizes (k) is plotted, however we decided prior to analysis that k should be 4
+```{r, echo=FALSE, warning = FALSE, message = FALSE}
 # Subset data where BISH is ID for Cape Town, South Africa
 pass.SA.completers = merge[merge$site=='BISH' & merge$TotalStdDrinks_Num_Avai_tri==3,]
 
-# Merge the 'TotalStdDrinksT1, TotalStdDrinksT2, TotalStdDrinksT3'
+# Merges the 'TotalStdDrinksT1, TotalStdDrinksT2, TotalStdDrinksT3'
 drinkvars=names(merge)[grep('TotalStdDrinksT',names(merge))]
 
-# Run KML for exposed patients only
+# Runs KML for exposed patients only - hence the != d0s0
 cld.SA.TotalStdDrinks=runkml(pass.SA.completers[pass.SA.completers$total_exposure_both!='d0s0',], grep('TotalStdDrinksT',names(merge)))
 
-# Create 'Cluster.TotalStdDrinks' column
+# Creates 'Cluster.TotalStdDrinks' column
 pass.SA.completers$Cluster.TotalStdDrinks<-NA
 
-# Enter 'N' in the 'Cluster.TotalStdDrinks' column for all nonexposed patients
+# Enters 'N' in the 'Cluster.TotalStdDrinks' column for all nonexposed patients
 pass.SA.completers$Cluster.TotalStdDrinks[pass.SA.completers$total_exposure_both=='d0s0']='N'
 
-# Input cluster number for each patient into the 'Cluster.TotalStdDrinks' column
+# Inputs cluster number for each patient into the 'Cluster.TotalStdDrinks' column
 pass.SA.completers$Cluster.TotalStdDrinks[pass.SA.completers$total_exposure_both!='d0s0']=getClusters(cld.SA.TotalStdDrinks,4)
+```
 
+
+#### Subject Count Per Cluster
+```{r, echo=FALSE, warning = FALSE, message = FALSE}
 # Tables for sample size and clusters (i.e. descriptive stats)
+
 StdDrinks.count <- table(pass.SA.completers$Cluster.TotalStdDrinks)
 StdDrinks.Prop <- round(prop.table(StdDrinks.count)*100, digits = 1)
 StdDrinks.Cum <- round((cumsum(StdDrinks.count)/(dim(pass.SA.completers)[1]))*100, digits = 1)
 StdDrinks.Table <- data.frame(cbind(StdDrinks.count,StdDrinks.Prop, StdDrinks.Cum))
-binded <- rbind(StdDrinks.Table,"Sum" = colSums(StdDrinks.Table[1:2]))
+binded <- data.frame(rbind(StdDrinks.Table,"Sum" = colSums(StdDrinks.Table[1:2])))
 binded[6,3] <- ""
+colnames(binded) <- c("N","Raw %","Cumulative %")
 
-Drinks.count.kable <- kable(binded, col.names = c("N","Raw %","Cumulative %"), "html", caption = "Subject Count Per Cluster")
-kable_styling(Drinks.count.kable, bootstrap_options = c("striped", "hover"), full_width = F, position = "left")
+binded %>%
+  kable() 
 
+```
+
+
+#### Subject Count Grouped by Cluster and Exposure
+##### For exposure definition, d0s0 - did not smoke or drink, d0s1 - did not drink but did smoke, etc
+```{r, echo=FALSE, warning = FALSE, message = FALSE}
 CrossTab.Drinks <- addmargins(xtabs(~Cluster.TotalStdDrinks+total_exposure_both, data = pass.SA.completers))
 
-Drinks.prop.kable <- kable(CrossTab.Drinks, "html", caption = "Subject Count Grouped by Cluster and Exposure")
-kable_styling(Drinks.prop.kable, bootstrap_options = c("striped", "hover"), full_width = F, position = "left")
+CrossTab.Drinks %>%
+  kable() 
 
 # Plotting the cluster trajectories
 ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalStdDrinks", drinkvars)], id=c('patid','Cluster.TotalStdDrinks')), aes(x=variable,y=value, group=patid, colour=Cluster.TotalStdDrinks)) + 
