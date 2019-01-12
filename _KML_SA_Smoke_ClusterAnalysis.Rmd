@@ -2,16 +2,17 @@
 title: "K-means Clustering by Total Cigarettes Per Trimester for Participants With Three Completed Trimesters in the South Africa Site"
 author: "Melissa Nuñez"
 date: "4/25/2018"
-output: html_document
+output: pdf_document
 ---
 
-```{r, include=FALSE}
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
 library(kml)
 library(ggplot2)
 library(reshape2)
+library(knitr)
 library(kableExtra)
 
-# Read in datasets
+## read in dataset 'merge'
 alcohol=read.csv('/Users/user/Dropbox/Melissa/PASS/data/adalc_patid.csv')
 smoke=read.csv('/Users/user/Dropbox/Melissa/PASS/data/adsmk_patid.csv')
 load('/Users/user/Dropbox/Melissa/PASS/kml_cluster_v1_20180426/PASS_allparticipants_v1_20180421.Rdata')
@@ -27,8 +28,8 @@ runkml<-function(data, variable.loc, time=c(1,2,3),newvar='cluster'){
 }
 ```
 
-#### Citerion for cluster sizes (k) is plotted, however we decided prior to analysis that k should be 4
-#### For exposure definition, d0s0 - did not smoke or drink, d0s1 - did not drink, but did smoke, etc
+
+### The citerion for cluster sizes (k) is plotted, however we decided prior to analysis that k should be 4
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
 ## Create dataset for specific site and all three trimesters completed
 pass.SA.completers = merge[merge$site=='BISH' & merge$TotCigs_Num_Avai_tri==3,]
@@ -47,23 +48,33 @@ pass.SA.completers$Cluster.TotalCigs[pass.SA.completers$total_exposure_both=='d0
 
 # Input cluster number for each patient into the 'Cluster.TotalStdDrinks' column
 pass.SA.completers$Cluster.TotalCigs[pass.SA.completers$total_exposure_both!='d0s0']=getClusters(cld.SA.TotalCigs,4)
+```
 
+
+#### Subject Count Per Cluster
+```{r, echo=FALSE, warning = FALSE, message = FALSE}
 # Sample size tables
 StdCigs.count <- table(pass.SA.completers$Cluster.TotalCigs)
 StdCigs.Prop <- round(prop.table(StdCigs.count)*100, digits = 1)
 StdCigs.Cum <- round((cumsum(StdCigs.count)/(dim(pass.SA.completers)[1]))*100, digits = 1)
 StdCigs.Table <- data.frame(cbind(StdCigs.count,StdCigs.Prop, StdCigs.Cum))
-binded <- rbind(StdCigs.Table,"Sum" = colSums(StdCigs.Table[1:2]))
+binded <- data.frame(rbind(StdCigs.Table,"Sum" = colSums(StdCigs.Table[1:2])))
 binded[6,3] <- ""
+colnames(binded) <- c("N","Raw %","Cumulative %")
 
-Cig.count.kable <- kable(binded, col.names = c("N","Raw %","Cumulative %"), "html", caption = "Subject Count Per Cluster")
-kable_styling(Cig.count.kable, bootstrap_options = c("striped", "hover"), full_width = F, position = "left")
+binded %>%
+  kable()
 
+```
+
+
+#### Subject Count Grouped by Cluster and Exposure
+##### For exposure definition, d0s0 - did not smoke or drink, d0s1 - did not drink but did smoke, etc
+```{r, echo=FALSE, warning = FALSE, message = FALSE}
 CrossTab.Cigs <- addmargins(xtabs(~Cluster.TotalCigs+total_exposure_both, data = pass.SA.completers))
 
-Cig.prop.kable <- kable(CrossTab.Cigs, "html", caption = "Subject Count Grouped by Cluster and Exposure")
-kable_styling(Cig.prop.kable, bootstrap_options = c("striped", "hover"), full_width = F, position = "left")
-
+CrossTab.Cigs %>%
+  kable() 
 
 # Plot the trajectories
 ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalCigs", cigvars)], id=c('patid','Cluster.TotalCigs')), aes(x=variable,y=value, group=patid, colour=Cluster.TotalCigs)) +
@@ -83,9 +94,6 @@ stat_summary(aes(y = value,group = Cluster.TotalCigs), fun.y=mean, geom="line",s
 scale_x_discrete(labels=c("T1","T2","T3")) + 
 facet_grid(. ~ Cluster.TotalCigs) + 
 ggtitle("Total Cigarettes Smoked Per Trimester Grouped by Cluster")
-
-
-
 
 ```
 
