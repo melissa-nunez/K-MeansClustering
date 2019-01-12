@@ -77,11 +77,18 @@ CrossTab.Cigs %>%
   kable() 
 
 # Plot the trajectories
-ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalCigs", cigvars)], id=c('patid','Cluster.TotalCigs')), aes(x=variable,y=value, group=patid, colour=Cluster.TotalCigs))+stat_summary(aes(y = value,group = Cluster.TotalCigs), fun.y=mean, geom="line",size=2)+theme(legend.position=c(0.8,0.8))+ggtitle("Total Cigarettes Smoked Per Trimester Grouped by Cluster")
+ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalCigs", cigvars)], id=c('patid','Cluster.TotalCigs')), aes(x=variable,y=value,
+group=patid, colour=Cluster.TotalCigs))+stat_summary(aes(y = value,group = Cluster.TotalCigs), fun.y=mean,
+geom="line",size=2)+theme(legend.position=c(0.8,0.8))+ggtitle("Total Cigarettes Smoked Per Trimester Grouped by Cluster")
 
+ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalCigs", cigvars)], id=c('patid','Cluster.TotalCigs')), aes(x=variable,y=value,
+group=patid, colour=Cluster.TotalCigs))+ggtitle("Total Cigarettes Smoked Per Trimester Grouped by Cluster")+geom_line(size=0.01,linetype =
+1)+stat_summary(aes(y = value,group = Cluster.TotalCigs), fun.y=mean, geom="line",size=2)
 
-ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalCigs", cigvars)], id=c('patid','Cluster.TotalCigs')), aes(x=variable,y=value, group=patid, colour=Cluster.TotalCigs))+ggtitle("Total Cigarettes Smoked Per Trimester Grouped by Cluster")+geom_line(size=0.01,linetype = 1)+stat_summary(aes(y = value,group = Cluster.TotalCigs), fun.y=mean, geom="line",size=2)
+ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalCigs", cigvars)], id=c('patid','Cluster.TotalCigs')), aes(x=variable,y=value,
+group=patid, colour=Cluster.TotalCigs))+ggtitle("Total Cigarettes Smoked Per Trimester Grouped by Cluster
+(Panels)")+geom_line(size=0.01,linetype = 1)+stat_summary(aes(y = value,group = Cluster.TotalCigs), fun.y=mean, geom="line",size=2) +
+scale_x_discrete(labels=c("T1","T2","T3")) + facet_grid(. ~ Cluster.TotalCigs)
 
-ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalCigs", cigvars)], id=c('patid','Cluster.TotalCigs')), aes(x=variable,y=value, group=patid, colour=Cluster.TotalCigs))+ggtitle("Total Cigarettes Smoked Per Trimester Grouped by Cluster (Panels)")+geom_line(size=0.01,linetype = 1)+stat_summary(aes(y = value,group = Cluster.TotalCigs), fun.y=mean, geom="line",size=2) + scale_x_discrete(labels=c("T1","T2","T3")) + facet_grid(. ~ Cluster.TotalCigs)
 
 ```
