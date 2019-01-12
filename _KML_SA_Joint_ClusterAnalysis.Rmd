@@ -2,7 +2,7 @@
 title: "K-means Clustering by Total Drinks and Total Cigaretters Per Trimester for Participants With Three Completed Trimesters in the South Africa Site"
 author: "Melissa Nuñez"
 date: "4/25/2018"
-output: html_document
+output: pdf_document
 ---
 
 
@@ -12,6 +12,7 @@ library(ggplot2)
 library(kableExtra)
 library(reshape2)
 library(gridExtra)
+library(knitr)
 
 ## Read in dataset 'merge'
 alcohol=read.csv('/Users/user/Dropbox/Melissa/PASS/data/adalc_patid.csv')
@@ -30,8 +31,9 @@ runkml3d<-function(data, variable.loc, time=c(1,2,3),newvar='cluster'){
 
 ```
 
-#### For exposure definition, d0s0 - did not smoke or drink, d0s1 - did not drink, but did smoke, etc
-```{r, echo=FALSE, warning = FALSE, message = FALSE}
+
+
+```{r, echo=FALSE, warning = FALSE, message = FALSE, include=FALSE}
 ## Subset data
 pass.SA.completers = merge[merge$site=='BISH' & merge$TotCigs_Num_Avai_tri==3 & merge$TotalStdDrinks_Num_Avai_tri==3,]
 
@@ -51,26 +53,31 @@ pass.SA.completers$Cluster.TotalJoint[pass.SA.completers$total_exposure_both=='d
 
 # Input cluster number for each patient into the 'Cluster.TotalStdDrinks' column
 pass.SA.completers$Cluster.TotalJoint[pass.SA.completers$total_exposure_both!='d0s0']=getClusters(cld.joint,4)
+```
 
+
+#### Subject Count Grouped by Cluster and Exposure
+##### For exposure definition, d0s0 - did not smoke or drink, d0s1 - did not drink but did smoke, etc
+```{r, echo=FALSE, warning = FALSE, message = FALSE}
 # Sample size tables
-library(matrixStats)
-library(kableExtra)
-
 StdJoint.count <- table(pass.SA.completers$Cluster.TotalJoint)
 StdJoint.Prop <- round(prop.table(StdJoint.count)*100, digits = 1)
 StdJoint.Cum <- round((cumsum(StdJoint.count)/(dim(pass.SA.completers)[1]))*100, digits = 1)
 StdJoint.Table <- data.frame(cbind(StdJoint.count,StdJoint.Prop, StdJoint.Cum))
-binded <- rbind(StdJoint.Table,"Sum" = colSums(StdJoint.Table[1:2]))
+binded <- data.frame(rbind(StdJoint.Table,"Sum" = colSums(StdJoint.Table[1:2])))
 binded[6,3] <- ""
+colnames(binded) <- c("N","Raw %","Cumulative %")
 
-Joint.count.kable <- kable(binded, col.names = c("N","Raw %","Cumulative %"), "html", caption = "Subject Count Per Cluster")
-kable_styling(Joint.count.kable, bootstrap_options = c("striped", "hover"), full_width = F, position = "left")
+binded %>%
+  kable()
+
+#Joint.count.kable <- kable(binded, col.names = c("N","Raw %","Cumulative %"), "html", caption = "Subject Count Per Cluster")
+#kable_styling(Joint.count.kable, bootstrap_options = c("striped", "hover"), full_width = F, position = "left")
 
 CrossTab.Joint <- addmargins(xtabs(~Cluster.TotalJoint+total_exposure_both, data = pass.SA.completers))
 
-Joint.prop.kable <- kable(CrossTab.Joint, "html", caption = "Subject Count Grouped by Cluster and Exposure")
-kable_styling(Joint.prop.kable, bootstrap_options = c("striped", "hover"), full_width = F, position = "left")
-
+CrossTab.Joint %>%
+  kable()
 
 ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalJoint", cigvars)], id=c('patid','Cluster.TotalJoint')), aes(x=variable,y=value, group=patid, colour=Cluster.TotalJoint))+ggtitle("Total Cigarettes for Joint Cluster")+stat_summary(aes(y = value,group = Cluster.TotalJoint), fun.y=mean, geom="line",size=2) + scale_x_discrete(labels=c("T1","T2","T3")) + facet_grid(. ~ Cluster.TotalJoint)
 
@@ -79,6 +86,7 @@ ggplot(melt(pass.SA.completers[,c("patid","Cluster.TotalJoint", drinkvars)], id=
 
 
 ```
+
 
 
 
