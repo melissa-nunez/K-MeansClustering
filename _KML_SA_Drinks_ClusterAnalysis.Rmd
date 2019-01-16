@@ -28,7 +28,7 @@ runkml<-function(data, variable.loc, time=c(1,2,3),newvar='cluster'){
 }
 ```
 
-### The citerion for cluster sizes (k) is plotted, however we decided prior to analysis that k should be 4
+### The citerion for cluster sizes (k) is plotted, however we decided prior to analysis that we want 4 clusters (k=4)
 ```{r, echo=FALSE, warning = FALSE, message = FALSE}
 # Subset data where BISH is ID for Cape Town, South Africa
 pass.SA.completers = merge[merge$site=='BISH' & merge$TotalStdDrinks_Num_Avai_tri==3,]
