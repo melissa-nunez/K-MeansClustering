@@ -45,13 +45,13 @@ cigvars=names(merge)[grep('TotCigsT',names(merge))]
 cld.joint <- cld3d(pass.SA.completers[pass.SA.completers$total_exposure_both!='d0s0',], timeInData = list(grep('TotCigsT',names(merge)),grep('TotalStdDrinksT',names(merge))), time = c(1,2,3))
 kml3d(cld.joint,nbClusters = 4:9)
 
-# Create new column called 'Cluster.TotalStdDrinks' with all NA entries
+# Create new column called 'Cluster.TotalJoint' with all NA entries
 pass.SA.completers$Cluster.TotalJoint<-NA
 
-# Enter 'N' in the 'Cluster.TotalStdDrinks' column for all nonexposed patients
+# Enter 'N' in the 'Cluster.TotalJoint' column for all nonexposed patients
 pass.SA.completers$Cluster.TotalJoint[pass.SA.completers$total_exposure_both=='d0s0']='N'
 
-# Input cluster number for each patient into the 'Cluster.TotalStdDrinks' column
+# Input cluster number for each patient into the 'Cluster.TotalJoint' column
 pass.SA.completers$Cluster.TotalJoint[pass.SA.completers$total_exposure_both!='d0s0']=getClusters(cld.joint,4)
 ```
 
