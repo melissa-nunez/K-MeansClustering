@@ -34,19 +34,19 @@ runkml<-function(data, variable.loc, time=c(1,2,3),newvar='cluster'){
 ## Create dataset for specific site and all three trimesters completed
 pass.SA.completers = merge[merge$site=='BISH' & merge$TotCigs_Num_Avai_tri==3,]
 
-# Merge the 'TotalStdDrinksT1, TotalStdDrinksT2, TotalStdDrinksT3'
+# Groups the 'TotalCigsT1, TotalCigsT2, TotalCigsT3'
 cigvars=names(merge)[grep('TotCigsT',names(merge))]
 
 # Run KML for exposed patients only - hence the != d0s0
 cld.SA.TotalCigs=runkml(pass.SA.completers[pass.SA.completers$total_exposure_both!='d0s0',], grep('TotCigsT',names(merge)))
 
-# Create new column called 'Cluster.TotalStdDrinks'
+# Create new column called 'Cluster.TotalCigs'
 pass.SA.completers$Cluster.TotalCigs<-NA
 
-# Enter 'N' in the 'Cluster.TotalStdDrinks' column for all nonexposed patients
+# Enter 'N' in the 'Cluster.TotalCigs' column for all nonexposed patients
 pass.SA.completers$Cluster.TotalCigs[pass.SA.completers$total_exposure_both=='d0s0']='N'
 
-# Input cluster number for each patient into the 'Cluster.TotalStdDrinks' column
+# Input cluster number for each patient into the 'Cluster.TotalCigs' column
 pass.SA.completers$Cluster.TotalCigs[pass.SA.completers$total_exposure_both!='d0s0']=getClusters(cld.SA.TotalCigs,4)
 ```
 
