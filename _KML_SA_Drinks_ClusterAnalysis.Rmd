@@ -33,7 +33,7 @@ runkml<-function(data, variable.loc, time=c(1,2,3),newvar='cluster'){
 # Subset data where BISH is ID for Cape Town, South Africa
 pass.SA.completers = merge[merge$site=='BISH' & merge$TotalStdDrinks_Num_Avai_tri==3,]
 
-# Merges the 'TotalStdDrinksT1, TotalStdDrinksT2, TotalStdDrinksT3'
+# Groups the 'TotalStdDrinksT1, TotalStdDrinksT2, TotalStdDrinksT3'
 drinkvars=names(merge)[grep('TotalStdDrinksT',names(merge))]
 
 # Runs KML for exposed patients only - hence the != d0s0
