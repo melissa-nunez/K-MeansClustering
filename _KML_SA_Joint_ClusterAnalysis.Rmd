@@ -13,6 +13,7 @@ library(kableExtra)
 library(reshape2)
 library(gridExtra)
 library(knitr)
+library(dplyr)
 
 ## Read in dataset 'merge'
 alcohol=read.csv('/Users/user/Dropbox/Melissa/PASS/data/adalc_patid.csv')
@@ -35,7 +36,7 @@ runkml3d<-function(data, variable.loc, time=c(1,2,3),newvar='cluster'){
 
 ```{r, echo=FALSE, warning = FALSE, message = FALSE, include=FALSE}
 ## Subset data
-pass.SA.completers = merge[merge$site=='BISH' & merge$TotCigs_Num_Avai_tri==3 & merge$TotalStdDrinks_Num_Avai_tri==3,]
+pass.SA.completers <- merge %>% filter(site == "BISH", TotalStdDrinks_Num_Avai_tri==3)
 
 # Groups the drinking and smoking variables
 drinkvars=names(merge)[grep('TotalStdDrinksT',names(merge))]
