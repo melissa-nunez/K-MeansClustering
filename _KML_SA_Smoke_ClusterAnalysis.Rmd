@@ -11,6 +11,7 @@ library(ggplot2)
 library(reshape2)
 library(knitr)
 library(kableExtra)
+library(dplyr)
 
 ## read in dataset 'merge'
 alcohol=read.csv('/Users/user/Dropbox/Melissa/PASS/data/adalc_patid.csv')
@@ -32,7 +33,7 @@ runkml<-function(data, variable.loc, time=c(1,2,3),newvar='cluster'){
 ### The citerion for cluster sizes (k) is plotted, however we decided prior to analysis that k should be 4
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
 ## Create dataset for specific site and all three trimesters completed
-pass.SA.completers = merge[merge$site=='BISH' & merge$TotCigs_Num_Avai_tri==3,]
+pass.SA.completers <- merge %>% filter(site == "BISH", TotalStdDrinks_Num_Avai_tri==3)
 
 # Groups the 'TotalCigsT1, TotalCigsT2, TotalCigsT3'
 cigvars=names(merge)[grep('TotCigsT',names(merge))]
